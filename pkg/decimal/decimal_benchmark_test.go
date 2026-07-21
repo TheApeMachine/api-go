@@ -8,7 +8,7 @@ func BenchmarkDecimalAddEqualScale(b *testing.B) {
 
 	b.ReportAllocs()
 
-	for b.Loop() {
+	for range b.N {
 		_ = left.Add(right)
 	}
 }
@@ -19,7 +19,7 @@ func BenchmarkDecimalAddMixedScale(b *testing.B) {
 
 	b.ReportAllocs()
 
-	for b.Loop() {
+	for range b.N {
 		_ = left.Add(right)
 	}
 }
@@ -30,7 +30,7 @@ func BenchmarkDecimalAddPreScaledOperands(b *testing.B) {
 
 	b.ReportAllocs()
 
-	for b.Loop() {
+	for range b.N {
 		_ = left.SetScale(4).Add(right.SetScale(4))
 	}
 }
@@ -41,7 +41,7 @@ func BenchmarkDecimalSubEqualScale(b *testing.B) {
 
 	b.ReportAllocs()
 
-	for b.Loop() {
+	for range b.N {
 		_ = left.Sub(right)
 	}
 }
@@ -52,7 +52,7 @@ func BenchmarkDecimalMulEqualScale(b *testing.B) {
 
 	b.ReportAllocs()
 
-	for b.Loop() {
+	for range b.N {
 		_ = left.Mul(right)
 	}
 }
@@ -63,7 +63,7 @@ func BenchmarkDecimalDivEqualScale(b *testing.B) {
 
 	b.ReportAllocs()
 
-	for b.Loop() {
+	for range b.N {
 		_ = left.Div(right)
 	}
 }
@@ -73,7 +73,7 @@ func BenchmarkDecimalFloat64(b *testing.B) {
 
 	b.ReportAllocs()
 
-	for b.Loop() {
+	for range b.N {
 		_ = value.Float64()
 	}
 }
