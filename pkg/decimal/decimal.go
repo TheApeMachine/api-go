@@ -106,31 +106,6 @@ func NewFromFloat64(f float64) *Decimal {
 	return NewFromBigFloat(new(big.Float).SetFloat64(f))
 }
 
-// SetScale returns m with adjusted decimal places.
-func (d *Decimal) SetScale(scale int64) *Decimal {
-	result := d.Copy()
-	if scale == d.scale {
-		return result
-	}
-	diff := scale - result.scale
-	result.scale = scale
-	if result.Sign() == 0 {
-		return result
-	}
-	absoluteDiff := int64(diff)
-	if absoluteDiff < 0 {
-		absoluteDiff = -absoluteDiff
-	}
-	factor := new(big.Int).Exp(big.NewInt(10), big.NewInt(absoluteDiff), nil)
-	if diff > 0 {
-		result.integer.Mul(d.integer, factor)
-	} else {
-		result.integer = result.rounding(result.integer, factor)
-	}
-	result.roundToGranularity()
-	return result
-}
-
 // GetScale returns the number of decimal points.
 func (d *Decimal) GetScale() int64 {
 	return d.scale
@@ -152,6 +127,14 @@ func (d *Decimal) Rat() *big.Rat {
 
 // Float64 returns the floating point representation of m with potential loss of precision.
 func (d *Decimal) Float64() float64 {
+	if d.integer == nil {
+		return 0
+	}
+
+	if d.integer.BitLen() <= 53 {
+		return float64(d.integer.Int64()) / math.Pow10(int(d.scale))
+	}
+
 	value, _ := d.Rat().Float64()
 	return value
 }
@@ -185,18 +168,13 @@ func (d *Decimal) Copy() *Decimal {
 	}
 }
 
-// ScalingFactor returns 10 ^ decimals in [big.Int].
-func (d *Decimal) ScalingFactor() *big.Int {
-	return new(big.Int).Exp(big.NewInt(10), big.NewInt(d.scale), nil)
-}
-
 // Add returns the result of x + y.
 func (x *Decimal) Add(y *Decimal) *Decimal {
 	result := x.Copy()
 	if y.Sign() == 0 {
 		return result
 	}
-	result.integer.Add(x.integer, y.SetScale(x.scale).integer)
+	result.integer.Add(x.integer, y.integerAtScale(x.scale))
 	result.roundToGranularity()
 	return result
 }
@@ -207,7 +185,7 @@ func (x *Decimal) Sub(y *Decimal) *Decimal {
 	if y.Sign() == 0 {
 		return result
 	}
-	result.integer.Sub(x.integer, y.SetScale(x.scale).integer)
+	result.integer.Sub(x.integer, y.integerAtScale(x.scale))
 	result.roundToGranularity()
 	return result
 }
@@ -215,7 +193,7 @@ func (x *Decimal) Sub(y *Decimal) *Decimal {
 // Mul returns the result of x * y
 func (x *Decimal) Mul(y *Decimal) *Decimal {
 	result := x.Copy()
-	result.integer.Mul(x.integer, y.SetScale(x.scale).integer)
+	result.integer.Mul(x.integer, y.integerAtScale(x.scale))
 	scale := x.ScalingFactor()
 	result.integer = result.rounding(result.integer, scale)
 	result.roundToGranularity()
@@ -230,7 +208,7 @@ func (x *Decimal) Div(y *Decimal) *Decimal {
 	}
 	scale := x.ScalingFactor()
 	result.integer.Mul(result.integer, scale)
-	result.integer = result.rounding(result.integer, y.SetScale(x.scale).integer)
+	result.integer = result.rounding(result.integer, y.integerAtScale(x.scale))
 	result.roundToGranularity()
 	return result
 }
@@ -288,32 +266,6 @@ func (d *Decimal) SetSize(size *Decimal) *Decimal {
 	return d.
 		SetScale(size.scale).
 		SetIncrement(size.integer.Int64())
-}
-
-// roundToGranularity returns the rounding of m to the granularity constraint.
-func (d *Decimal) roundToGranularity() {
-	if d.increment <= 1 {
-		return
-	}
-	tick := big.NewInt(d.increment)
-	remainder := new(big.Int).Mod(d.integer, tick)
-	half := new(big.Int).Div(tick, big.NewInt(2))
-	remainderCmpHalf := remainder.Cmp(half)
-	if remainderCmpHalf > 0 {
-		d.integer.
-			Sub(d.integer, remainder).
-			Add(d.integer, tick)
-	} else if remainderCmpHalf < 0 {
-		d.integer.Sub(d.integer, remainder)
-	} else {
-		roundedDown := new(big.Int).Sub(d.integer, remainder)
-		quotient := new(big.Int).Div(roundedDown, tick)
-		if quotient.Bit(0) == 0 {
-			d.integer = roundedDown
-		} else {
-			d.integer = roundedDown.Add(roundedDown, tick)
-		}
-	}
 }
 
 // OffsetTicks returns the adjustment of m by an increment proportional to o.
