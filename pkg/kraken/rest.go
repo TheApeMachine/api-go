@@ -2,13 +2,13 @@ package kraken
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 
-	"github.com/bytedance/sonic"
 	"github.com/krakenfx/api-go/v2/internal/helper"
 	"golang.org/x/net/http2"
 )
@@ -251,12 +251,10 @@ type Response struct {
 
 // JSON decodes the body and stores it into the value pointed by v.
 func (r *Response) JSON(v any) error {
-	decoder := sonic.ConfigFastest.NewDecoder(bytes.NewReader(r.Body))
+	decoder := json.NewDecoder(bytes.NewReader(r.Body))
 	decoder.UseNumber()
-
 	if err := decoder.Decode(v); err != nil {
 		return fmt.Errorf("json decode \"%s\": %w", string(r.Body), err)
 	}
-
 	return nil
 }

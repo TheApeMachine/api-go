@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
 	"time"
 
-	"github.com/bytedance/sonic"
 	"github.com/gorilla/websocket"
 	"github.com/krakenfx/api-go/v2/pkg/callback"
 )
@@ -95,7 +95,7 @@ func NewWebSocketMessage(d []byte) *WebSocketMessage {
 }
 
 func (m *WebSocketMessage) JSON(v any) error {
-	decoder := sonic.ConfigFastest.NewDecoder(bytes.NewReader(m.data))
+	decoder := json.NewDecoder(bytes.NewReader(m.data))
 	decoder.UseNumber()
 	if err := decoder.Decode(v); err != nil {
 		return fmt.Errorf("json unmarshal \"%s\": %w", m.data, err)
@@ -171,7 +171,7 @@ func (ws *WebSocket) IsActive() bool {
 
 // WriteJSON submits a message to the connection.
 func (ws *WebSocket) WriteJSON(message any) error {
-	data, err := sonic.Marshal(message)
+	data, err := json.Marshal(message)
 	if err != nil {
 		return fmt.Errorf("json marshal failed: %s", err)
 	}
