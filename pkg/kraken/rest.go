@@ -2,13 +2,13 @@ package kraken
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/bytedance/sonic"
 	"github.com/krakenfx/api-go/v2/internal/helper"
 	"golang.org/x/net/http2"
 )
@@ -244,17 +244,19 @@ func (r *Request) MustGetBodyBytes() []byte {
 
 // Response is a wrapper around [http.Response] with a read body.
 type Response struct {
-	Request        *Request `json:"-,omitempty"`
+	Request        *Request `json:"-"`
 	Body           []byte   `json:"body,omitempty"`
 	*http.Response `json:"-"`
 }
 
 // JSON decodes the body and stores it into the value pointed by v.
 func (r *Response) JSON(v any) error {
-	decoder := json.NewDecoder(bytes.NewReader(r.Body))
+	decoder := sonic.ConfigFastest.NewDecoder(bytes.NewReader(r.Body))
 	decoder.UseNumber()
+
 	if err := decoder.Decode(v); err != nil {
 		return fmt.Errorf("json decode \"%s\": %w", string(r.Body), err)
 	}
+
 	return nil
 }

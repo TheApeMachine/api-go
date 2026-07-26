@@ -7,6 +7,19 @@ import (
 	"github.com/krakenfx/api-go/v2/pkg/decimal"
 )
 
+type BalanceData struct {
+	Asset      string           `json:"asset"`
+	AssetClass string           `json:"asset_class"`
+	Balance    *decimal.Decimal `json:"balance"`
+	Wallets    []Wallet         `json:"wallets"`
+}
+
+type Wallet struct {
+	Type    string           `json:"type"`
+	ID      string           `json:"id"`
+	Balance *decimal.Decimal `json:"balance"`
+}
+
 type FullName struct {
 	FirstName  string `json:"first_name,omitempty"`
 	MiddleName string `json:"middle_name,omitempty"`
