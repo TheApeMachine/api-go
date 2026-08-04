@@ -20,12 +20,17 @@ type WebSocket struct {
 	ReconnectWait time.Duration
 	DoReconnect   bool
 
+	// Dial establishes the underlying connection. When nil, Connect dials
+	// URL over the network. Tests set this to supply an in-memory connection
+	// so the read loop, callbacks, and write path all run unchanged.
+	Dial func(url string) (*websocket.Conn, error)
+
 	OnConnected    *callback.Manager[any]
 	OnDisconnected *callback.Manager[error]
 	OnSent         *callback.Manager[*WebSocketMessage]
 	OnReceived     *callback.Manager[*WebSocketMessage]
 
-	conn     *websocket.Conn
+	Conn     *websocket.Conn
 	URL      string
 	writeMux sync.Mutex
 	Insecure bool
@@ -59,6 +64,17 @@ func NewWebSocket() *WebSocket {
 
 // Connect establishes a connection.
 func (ws *WebSocket) Connect() error {
+	if ws.Dial != nil {
+		connection, err := ws.Dial(ws.URL)
+		if err != nil {
+			return fmt.Errorf("dial failed: %s", err)
+		}
+		ws.Conn = connection
+		ws.DoReconnect = true
+		go ws.read()
+		ws.OnConnected.Call(nil)
+		return nil
+	}
 	dialer := &websocket.Dialer{
 		Proxy:            http.ProxyFromEnvironment,
 		HandshakeTimeout: 45 * time.Second,
@@ -75,7 +91,7 @@ func (ws *WebSocket) Connect() error {
 	if err != nil {
 		return fmt.Errorf("dial failed: %s", err)
 	}
-	ws.conn = connection
+	ws.Conn = connection
 	ws.DoReconnect = true
 	go ws.read()
 	ws.OnConnected.Call(nil)
@@ -131,9 +147,9 @@ func (ws *WebSocket) read() {
 		ws.active = false
 	}()
 	for {
-		_, data, err := ws.conn.ReadMessage()
+		_, data, err := ws.Conn.ReadMessage()
 		if err != nil {
-			_ = ws.conn.Close()
+			_ = ws.Conn.Close()
 			ws.OnDisconnected.Call(err)
 			return
 		}
@@ -147,7 +163,7 @@ func (ws *WebSocket) Disconnect() error {
 	done := make(chan bool)
 	defer close(done)
 	defer func() {
-		_ = ws.conn.Close()
+		_ = ws.Conn.Close()
 	}()
 	callback := ws.OnDisconnected.Recurring(func(e *callback.Event[error]) {
 		done <- true
@@ -183,12 +199,12 @@ func (ws *WebSocket) WriteJSON(message any) error {
 
 // WriteMessage submits a raw message to the connection.
 func (ws *WebSocket) WriteMessage(messageType int, data []byte) error {
-	if ws.conn == nil {
+	if ws.Conn == nil {
 		return fmt.Errorf("no connection")
 	}
 	ws.writeMux.Lock()
 	defer ws.writeMux.Unlock()
-	if err := ws.conn.WriteMessage(messageType, data); err != nil {
+	if err := ws.Conn.WriteMessage(messageType, data); err != nil {
 		return fmt.Errorf("write message failed: %s", err)
 	}
 	ws.OnSent.Call(NewWebSocketMessage(data))
