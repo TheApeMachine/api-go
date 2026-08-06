@@ -3,9 +3,9 @@ package spot
 import (
 	"fmt"
 
-	"github.com/krakenfx/api-go/v2/internal/helper"
-	"github.com/krakenfx/api-go/v2/pkg/callback"
-	"github.com/krakenfx/api-go/v2/pkg/kraken"
+	"github.com/theapemachine/api-go/v2/internal/helper"
+	"github.com/theapemachine/api-go/v2/pkg/callback"
+	"github.com/theapemachine/api-go/v2/pkg/kraken"
 )
 
 // WebSocketBase is the underlying of the [WebSocket] client.

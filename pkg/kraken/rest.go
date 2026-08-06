@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/krakenfx/api-go/v2/internal/helper"
+	"github.com/theapemachine/api-go/v2/internal/helper"
 	"golang.org/x/net/http2"
 )
 

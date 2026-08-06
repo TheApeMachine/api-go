@@ -1,7 +1,7 @@
 package book
 
 import (
-	"github.com/krakenfx/api-go/v2/pkg/decimal"
+	"github.com/theapemachine/api-go/v2/pkg/decimal"
 )
 
 // Side encompasses the price levels in one side of the book.

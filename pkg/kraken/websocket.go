@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/krakenfx/api-go/v2/pkg/callback"
+	"github.com/theapemachine/api-go/v2/pkg/callback"
 )
 
 // WebSocket implements a common structure for the WebSocket APIs.

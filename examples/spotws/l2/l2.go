@@ -5,11 +5,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/krakenfx/api-go/v2/internal/helper"
-	"github.com/krakenfx/api-go/v2/pkg/book"
-	"github.com/krakenfx/api-go/v2/pkg/callback"
-	"github.com/krakenfx/api-go/v2/pkg/kraken"
-	"github.com/krakenfx/api-go/v2/pkg/spot"
+	"github.com/theapemachine/api-go/v2/internal/helper"
+	"github.com/theapemachine/api-go/v2/pkg/book"
+	"github.com/theapemachine/api-go/v2/pkg/callback"
+	"github.com/theapemachine/api-go/v2/pkg/kraken"
+	"github.com/theapemachine/api-go/v2/pkg/spot"
 )
 
 func main() {

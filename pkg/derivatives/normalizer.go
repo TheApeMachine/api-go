@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/krakenfx/api-go/v2/pkg/decimal"
+	"github.com/theapemachine/api-go/v2/pkg/decimal"
 )
 
 // Normalizer provides helper methods for a group of [Instrument] objects.

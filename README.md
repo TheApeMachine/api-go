@@ -23,13 +23,13 @@ Key features include:
 
 To install the module in your Go project:
 ```bash
-go get github.com/krakenfx/api-go/v2/...
+go get github.com/theapemachine/api-go/v2/...
 ```
 
 If you're interested in running examples or contributing to development, clone the repo and install dependencies:
 
 ```bash
-git clone https://github.com/krakenfx/api-go.git
+git clone https://github.com/theapemachine/api-go.git
 cd api-go
 go mod download
 ```
